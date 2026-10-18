@@ -33,7 +33,7 @@
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Masuk Sebagai</label>
                     <select x-model="loginRole" class="w-full border border-slate-200 rounded-xl px-3.5 py-3 text-sm focus:ring-2 focus:ring-emerald-500 bg-slate-50 font-semibold">
-                        <option value="pasien">Siswa / Guru (Akun Anggota)</option>
+                        <option value="pasien">Siswa / Guru / Tendik (Akun Anggota)</option>
                         <option value="owner">Petugas / Pengurus UKS</option>
                     </select>
                 </div>
@@ -91,8 +91,8 @@
                 </div>
                 <nav class="flex flex-wrap gap-1.5 items-center justify-center">
                     <button @click="tab = 'dashboard'" :class="tab === 'dashboard' ? 'bg-white text-emerald-900 font-bold shadow' : 'hover:bg-emerald-700/50 text-white'" class="px-3 py-2 rounded-xl text-xs transition">Dashboard</button>
-                    <button @click="tab = 'pengunjung'" :class="tab === 'pengunjung' ? 'bg-white text-emerald-900 font-bold shadow' : 'hover:bg-emerald-700/50 text-white'" class="px-3 py-2 rounded-xl text-xs transition">Data Pasien & Surat</button>
-                    <button @click="tab = 'obat'" :class="tab === 'obat' ? 'bg-white text-emerald-900 font-bold shadow' : 'hover:bg-emerald-700/50 text-white'" class="px-3 py-2 rounded-xl text-xs transition">Data Obat & Minyak</button>
+                    <button @click="tab = 'pengunjung'" :class="tab === 'pengunjung' ? 'bg-white text-emerald-900 font-bold shadow' : 'hover:bg-emerald-700/50 text-white'" class="px-3 py-2 rounded-xl text-xs transition">Data Pasien</button>
+                    <button @click="tab = 'obat'" :class="tab === 'obat' ? 'bg-white text-emerald-900 font-bold shadow' : 'hover:bg-emerald-700/50 text-white'" class="px-3 py-2 rounded-xl text-xs transition">Data Obat</button>
                     <button @click="tab = 'alat'" :class="tab === 'alat' ? 'bg-white text-emerald-900 font-bold shadow' : 'hover:bg-emerald-700/50 text-white'" class="px-3 py-2 rounded-xl text-xs transition">Data Alat Medis</button>
                     <button @click="tab = 'keuangan'" :class="tab === 'keuangan' ? 'bg-white text-emerald-900 font-bold shadow' : 'hover:bg-emerald-700/50 text-white'" class="px-3 py-2 rounded-xl text-xs transition">Keuangan</button>
                     <button x-show="loginRole === 'owner'" @click="tab = 'anggota'" :class="tab === 'anggota' ? 'bg-white text-emerald-900 font-bold shadow' : 'hover:bg-emerald-700/50 text-white'" class="px-3 py-2 rounded-xl text-xs transition">Anggota</button>
@@ -132,7 +132,7 @@
                 <div x-show="getNotifikasiPeringatan().length > 0" class="bg-red-50 border-l-4 border-red-500 p-5 rounded-2xl shadow-sm space-y-2 border">
                     <div class="flex items-center space-x-2 text-red-800 font-bold text-xs uppercase tracking-wider">
                         <i class="fa-solid fa-triangle-exclamation text-base"></i>
-                        <span>PERINGATAN KRITIS OBAT EXPIRED / MENIPIS!</span>
+                        <span>PERINGATAN KRITIS OBAT EXPIRED / STOK MENIPIS!</span>
                     </div>
                     <div class="flex flex-wrap gap-2 pt-1">
                         <template x-for="item in getNotifikasiPeringatan()">
@@ -216,7 +216,7 @@
                 </div>
             </div>
 
-            <!-- TAB: DATA PASIEN & SURAT -->
+            <!-- TAB: DATA PASIEN -->
             <div x-show="tab === 'pengunjung'" class="space-y-6">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div x-show="loginRole === 'owner'" class="lg:col-span-1 bg-white rounded-3xl shadow-sm border border-slate-100 p-6 space-y-4">
@@ -262,7 +262,7 @@
                             </div>
 
                             <div class="border-t pt-3">
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1"><i class="fa-solid fa-pills mr-1 text-blue-600"></i> Penggunaan Obat</label>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1"><i class="fa-solid fa-pills mr-1 text-blue-600"></i> Penggunaan Obat / Gulungan</label>
                                 <template x-for="(oItem, oIndex) in formKunjungan.obatList" :key="oIndex">
                                     <div class="bg-blue-50/50 p-3 rounded-2xl border border-blue-100 space-y-2 mb-2">
                                         <div class="flex justify-between items-center">
@@ -270,12 +270,12 @@
                                             <button type="button" @click="formKunjungan.obatList.splice(oIndex, 1)" class="text-red-500 text-xs"><i class="fa-solid fa-trash"></i></button>
                                         </div>
                                         <select x-model="oItem.nama" class="w-full border rounded-xl px-2.5 py-2 text-xs bg-white font-semibold">
-                                            <option value="">-- Pilih Obat & Batch --</option>
+                                            <option value="">-- Pilih Obat / Kasa --</option>
                                             <template x-for="o in daftarObat">
-                                                <option :value="o.nama + ' (' + o.jenisBatch + ')'" :disabled="isSudahExpired(o.expired)" x-text="o.nama + ' [' + o.jenisBatch + '] (Exp: ' + o.expired + ') - Stok: ' + o.stokUtuh"></option>
+                                                <option :value="o.nama + ' (' + o.jenisBatch + ')'" :disabled="isSudahExpired(o.expired)" x-text="o.nama + ' [' + o.jenisBatch + '] (Sisa: ' + o.stokUtuh + ' ' + (o.tipeKasa ? 'cm' : 'Botol') + ')'"></option>
                                             </template>
                                         </select>
-                                        <input type="number" min="0.1" step="any" x-model.number="oItem.jumlah" class="w-full border rounded-xl px-2.5 py-2 text-xs" placeholder="Takaran pakai">
+                                        <input type="number" min="0.1" step="any" x-model.number="oItem.jumlah" class="w-full border rounded-xl px-2.5 py-2 text-xs" placeholder="Takaran pakai (Botol / cm)">
                                     </div>
                                 </template>
                                 <button type="button" @click="formKunjungan.obatList.push({nama: '', jumlah: 1})" class="text-xs font-bold text-blue-600 hover:text-blue-700">+ Tambah Obat Lain</button>
@@ -407,40 +407,42 @@
                 </div>
             </div>
 
-            <!-- TAB: DATA OBAT -->
+            <!-- TAB: DATA OBAT (Mendukung Obat Botol & Kain Kasa Gulung) -->
             <div x-show="tab === 'obat'" class="space-y-6">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 space-y-6">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
                             <h2 class="text-base font-bold text-slate-700 flex items-center space-x-2">
                                 <i class="fa-solid fa-pills text-emerald-600"></i>
-                                <span>Manajemen Obat (Batch Stok Lama & Baru dengan Tanggal Expired)</span>
+                                <span>Data Obat & Kain Kasa Pergulungan</span>
                             </h2>
                         </div>
-                        <button x-show="loginRole === 'owner'" @click="bukaModalObat = true" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs shadow transition">+ Tambah Batch Obat</button>
+                        <button x-show="loginRole === 'owner'" @click="bukaModalObat = true" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs shadow transition">+ Tambah Obat / Kasa</button>
                     </div>
 
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse text-sm">
                             <thead>
                                 <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b">
-                                    <th class="p-3">Nama Obat</th><th class="p-3">Jenis Batch</th><th class="p-3">Tgl Produksi</th><th class="p-3">Tgl Expired</th><th class="p-3">Stok Botol</th><th class="p-3">Status Expired</th><th class="p-3" x-show="loginRole === 'owner'">Aksi</th>
+                                    <th class="p-3">Nama Obat / Kasa</th><th class="p-3">Tipe</th><th class="p-3">Batch & Expired</th><th class="p-3">Sisa Stok / Panjang</th><th class="p-3">Status</th><th class="p-3" x-show="loginRole === 'owner'">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
                                 <template x-for="(o, index) in daftarObat" :key="index">
                                     <tr>
                                         <td class="p-3 font-bold text-slate-700" x-text="o.nama"></td>
-                                        <td class="p-3"><span class="px-2 py-1 rounded text-xs font-bold" :class="o.jenisBatch === 'Baru' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-800'" x-text="o.jenisBatch"></span></td>
-                                        <td class="p-3 text-xs" x-text="o.produksi"></td>
-                                        <td class="p-3 text-xs font-bold" x-text="o.expired"></td>
-                                        <td class="p-3 font-black text-blue-700" x-text="o.stokUtuh + ' Botol'"></td>
+                                        <td class="p-3 text-xs"><span class="px-2 py-1 rounded font-bold" :class="o.tipeKasa ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'" x-text="o.tipeKasa ? 'Kasa Gulung (Panjang cm)' : 'Obat Botol / Satuan'"></span></td>
                                         <td class="p-3 text-xs">
-                                            <span class="px-2.5 py-1 rounded-full font-bold" :class="isSudahExpired(o.expired) ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-800'" x-text="isSudahExpired(o.expired) ? 'EXPIRED (Kadaluarsa)' : 'Aman'"></span>
+                                            <span class="font-bold" x-text="o.jenisBatch"></span><br>
+                                            <span class="text-slate-400" x-text="'Exp: ' + o.expired"></span>
+                                        </td>
+                                        <td class="p-3 font-black" :class="o.tipeKasa ? 'text-amber-700' : 'text-blue-700'" x-text="o.stokUtuh + (o.tipeKasa ? ' cm (Total)' : ' Botol')"></td>
+                                        <td class="p-3 text-xs">
+                                            <span class="px-2.5 py-1 rounded-full font-bold" :class="isSudahExpired(o.expired) ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-800'" x-text="isSudahExpired(o.expired) ? 'EXPIRED' : 'Aman'"></span>
                                         </td>
                                         <td class="p-3 space-x-2" x-show="loginRole === 'owner'">
                                             <button @click="editObat(index)" class="text-blue-600 font-bold text-xs"><i class="fa-solid fa-pen"></i></button>
-                                            <button @click="daftarObat.splice(index, 1)" class="text-red-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+                                            <button @click="daftarObat.splice(index, 1); sinkronKeCloud('simpanObat', daftarObat)" class="text-red-500 text-xs"><i class="fa-solid fa-trash"></i></button>
                                         </td>
                                     </tr>
                                 </template>
@@ -478,7 +480,7 @@
                                         <td class="p-3 text-xs"><span class="px-3 py-1 rounded-full font-bold bg-emerald-100 text-emerald-800" x-text="a.kondisi"></span></td>
                                         <td class="p-3 space-x-2" x-show="loginRole === 'owner'">
                                             <button @click="editAlat(index)" class="text-blue-600 font-bold text-xs"><i class="fa-solid fa-pen"></i></button>
-                                            <button @click="daftarAlat.splice(index, 1)" class="text-red-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+                                            <button @click="daftarAlat.splice(index, 1); sinkronKeCloud('simpanAlat', daftarAlat)" class="text-red-500 text-xs"><i class="fa-solid fa-trash"></i></button>
                                         </td>
                                     </tr>
                                 </template>
@@ -517,7 +519,7 @@
                                         <td class="p-3"><span class="text-[10px] px-2.5 py-1 rounded-full font-bold" :class="k.jenis === 'Masuk' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'" x-text="k.jenis"></span></td>
                                         <td class="p-3 font-bold" :class="k.jenis === 'Masuk' ? 'text-emerald-600' : 'text-red-600'" x-text="k.jenis === 'Masuk' ? '+ Rp ' + k.nominal.toLocaleString('id-ID') : '- Rp ' + k.nominal.toLocaleString('id-ID')"></td>
                                         <td class="p-3 space-x-2" x-show="loginRole === 'owner'">
-                                            <button @click="daftarKeuangan.splice(index, 1)" class="text-red-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+                                            <button @click="daftarKeuangan.splice(index, 1); sinkronKeCloud('simpanKeuangan', daftarKeuangan)" class="text-red-500 text-xs"><i class="fa-solid fa-trash"></i></button>
                                         </td>
                                     </tr>
                                 </template>
@@ -527,12 +529,12 @@
                 </div>
             </div>
 
-            <!-- TAB: ANGGOTA -->
+            <!-- TAB: ANGGOTA (Dengan Opsi Tendik) -->
             <div x-show="tab === 'anggota' && loginRole === 'owner'" class="space-y-6">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 space-y-6">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
-                            <h2 class="text-base font-bold text-slate-700 flex items-center space-x-2"><i class="fa-solid fa-users-gear text-emerald-600"></i><span>Manajemen Anggota</span></h2>
+                            <h2 class="text-base font-bold text-slate-700 flex items-center space-x-2"><i class="fa-solid fa-users-gear text-emerald-600"></i><span>Manajemen Anggota (Siswa, Guru, Tendik)</span></h2>
                         </div>
                         <div class="flex flex-wrap gap-2">
                             <button @click="naikkanKelasMassal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs shadow"><i class="fa-solid fa-graduation-cap mr-1"></i> Proses Kenaikan Kelas</button>
@@ -543,7 +545,7 @@
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse text-sm">
                             <thead>
-                                <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b"><th class="p-3">Nama</th><th class="p-3">Peran</th><th class="p-3">NIS/NIP</th><th class="p-3">Kelas</th><th class="p-3">Sandi Akun</th><th class="p-3">Aksi</th></tr>
+                                <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b"><th class="p-3">Nama</th><th class="p-3">Peran</th><th class="p-3">NIS/NIP</th><th class="p-3">Kelas / Unit</th><th class="p-3">Sandi Akun</th><th class="p-3">Aksi</th></tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
                                 <template x-for="(m, index) in daftarAnggota" :key="index">
@@ -593,12 +595,12 @@
                 </div>
             </div>
 
-            <!-- TAB: LAPORAN -->
+            <!-- TAB: LAPORAN (Arsip Bulanan & Tahunan Tersimpan Permanen) -->
             <div x-show="tab === 'laporan' && loginRole === 'owner'" class="space-y-6">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 space-y-6">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
-                            <h2 class="text-base font-bold text-slate-700">Pusat Laporan Berkala (Filter Bulan & Tahun)</h2>
+                            <h2 class="text-base font-bold text-slate-700">Pusat Laporan Berkala (Arsip Bulanan & Tahunan Permanen)</h2>
                         </div>
                         <div class="flex items-center space-x-3 bg-slate-50 p-3 rounded-2xl border">
                             <div>
@@ -614,16 +616,16 @@
                                 <label class="block text-[10px] uppercase font-bold text-slate-500">Tahun</label>
                                 <select x-model="filterTahun" class="border rounded-xl px-3 py-1.5 text-xs font-semibold bg-white">
                                     <option value="ALL">Semua Tahun</option>
-                                    <option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option>
+                                    <option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option>
                                 </select>
                             </div>
                         </div>
                     </div>
 
                     <div class="border bg-slate-50/60 p-6 rounded-2xl space-y-4">
-                        <h3 class="font-bold text-slate-700 text-sm">Pratinjau Periode (<span x-text="filterBulan + ' / ' + filterTahun"></span>)</h3>
-                        <p class="text-xs text-slate-500">Total Pasien: <strong class="text-emerald-700" x-text="getKunjunganFiltered().length"></strong> Kasus</p>
-                        <button @click="downloadLaporanDoc()" class="bg-blue-600 text-white font-bold py-3 px-5 rounded-xl text-xs shadow"><i class="fa-solid fa-file-word mr-1.5"></i> Unduh Laporan Word</button>
+                        <h3 class="font-bold text-slate-700 text-sm">Arsip Periode Terpilih (<span x-text="filterBulan + ' / ' + filterTahun"></span>)</h3>
+                        <p class="text-xs text-slate-500">Total Pasien Tercatat: <strong class="text-emerald-700" x-text="getKunjunganFiltered().length"></strong> Kasus</p>
+                        <button @click="downloadLaporanDoc()" class="bg-blue-600 text-white font-bold py-3 px-5 rounded-xl text-xs shadow"><i class="fa-solid fa-file-word mr-1.5"></i> Unduh Arsip Laporan Word</button>
                     </div>
                 </div>
             </div>
@@ -658,16 +660,25 @@
                 </div>
             </div>
 
-            <!-- TAB: SETELAN -->
+            <!-- TAB: SETELAN & UBAH SANDI PETUGAS -->
             <div x-show="tab === 'setting' && loginRole === 'owner'" class="space-y-6">
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 space-y-5 max-w-xl mx-auto">
-                    <h2 class="text-lg font-black text-slate-700"><i class="fa-solid fa-gear text-emerald-600 mr-2"></i>Setelan Informasi Sekolah</h2>
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 space-y-6 max-w-xl mx-auto">
+                    <h2 class="text-lg font-black text-slate-700"><i class="fa-solid fa-gear text-emerald-600 mr-2"></i>Setelan Informasi & Sandi Petugas</h2>
                     <div class="space-y-4">
                         <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nama Sekolah</label><input type="text" x-model="identitas.namaSekolah" class="w-full border rounded-xl px-3.5 py-3 text-sm font-semibold"></div>
                         <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nama Pengurus UKS</label><input type="text" x-model="identitas.petugas" class="w-full border rounded-xl px-3.5 py-3 text-sm font-semibold"></div>
                         <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tahun Ajaran</label><input type="text" x-model="identitas.tahunAjaran" class="w-full border rounded-xl px-3.5 py-3 text-sm font-semibold"></div>
                         <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">URL Logo Sekolah</label><input type="text" x-model="identitas.logoUrl" class="w-full border rounded-xl px-3.5 py-3 text-xs font-mono"></div>
                         <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">URL Google Sheet Web App</label><input type="text" x-model="webAppUrl" class="w-full border rounded-xl px-3.5 py-3 text-xs font-mono bg-slate-50" placeholder="https://script.google.com/macros/s/.../exec"></div>
+                        
+                        <div class="border-t pt-4 space-y-3">
+                            <h3 class="text-sm font-bold text-slate-700"><i class="fa-solid fa-key text-emerald-600 mr-1"></i> Ubah Kata Sandi Petugas</h3>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Kata Sandi Baru Petugas</label>
+                                <input type="password" x-model="identitas.passwordOwner" class="w-full border rounded-xl px-3.5 py-3 text-sm font-semibold" placeholder="Masukkan sandi baru pengurus...">
+                            </div>
+                        </div>
+
                         <button @click="simpanIdentitasDanSetelan()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl text-sm shadow">Simpan Perubahan & Sinkronkan</button>
                     </div>
                 </div>
@@ -676,21 +687,37 @@
         </main>
     </div>
 
-    <!-- MODAL-MODAL -->
+    <!-- MODAL: TAMBAH OBAT & KASUR GULUNG KASA -->
     <div x-show="bukaModalObat" class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
-            <h3 class="text-lg font-bold text-slate-700">Tambah Batch Obat / Minyak</h3>
-            <input type="text" x-model="formObat.nama" class="w-full border rounded-xl px-3.5 py-2.5 text-sm" placeholder="Nama Obat">
+            <h3 class="text-lg font-bold text-slate-700">Tambah Data Obat / Kain Kasa Pergulungan</h3>
+            <input type="text" x-model="formObat.nama" class="w-full border rounded-xl px-3.5 py-2.5 text-sm" placeholder="Nama Obat / Kain Kasa (Cth: Kain Kasa Gulung)">
+            
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tipe Satuan</label>
+                <select x-model.boolean="formObat.tipeKasa" class="w-full border rounded-xl px-3 py-2 text-xs bg-white font-bold">
+                    <option :value="false">Obat Botol / Satuan Utuh</option>
+                    <option :value="true">Kain Kasa Pergulungan (Panjang dalam CM / Lembar)</option>
+                </select>
+            </div>
+
             <select x-model="formObat.jenisBatch" class="w-full border rounded-xl px-3.5 py-2.5 text-sm bg-white"><option value="Baru">Batch Stok Baru</option><option value="Lama">Batch Stok Lama</option></select>
+            
             <div class="grid grid-cols-2 gap-2">
                 <div><label class="block text-[10px] font-bold text-slate-500">Tgl Produksi</label><input type="date" x-model="formObat.produksi" class="w-full border rounded-xl px-3 py-2 text-xs"></div>
                 <div><label class="block text-[10px] font-bold text-slate-500">Tgl Expired</label><input type="date" x-model="formObat.expired" class="w-full border rounded-xl px-3 py-2 text-xs"></div>
             </div>
-            <input type="number" x-model.number="formObat.stokUtuh" class="w-full border rounded-xl px-3.5 py-2.5 text-sm" placeholder="Jumlah Botol Utuh">
-            <div class="flex justify-end space-x-2 pt-2"><button @click="bukaModalObat = false" class="bg-slate-200 px-4 py-2 rounded-xl text-xs font-bold">Batal</button><button @click="simpanObat()" class="bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-bold">Simpan</button></div>
+
+            <input type="number" x-model.number="formObat.stokUtuh" class="w-full border rounded-xl px-3.5 py-2.5 text-sm" :placeholder="formObat.tipeKasa ? 'Total Panjang Kasa dalam CM (Cth: 1000 cm)' : 'Jumlah Botol Utuh'">
+            
+            <div class="flex justify-end space-x-2 pt-2">
+                <button @click="bukaModalObat = false" class="bg-slate-200 px-4 py-2 rounded-xl text-xs font-bold">Batal</button>
+                <button @click="simpanObat()" class="bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-bold">Simpan</button>
+            </div>
         </div>
     </div>
 
+    <!-- MODAL: ALAT -->
     <div x-show="bukaModalAlat" class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
             <h3 class="text-lg font-bold text-slate-700">Tambah Alat Medis</h3>
@@ -700,6 +727,7 @@
         </div>
     </div>
 
+    <!-- MODAL: KEUANGAN -->
     <div x-show="bukaModalKeuangan" class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
             <h3 class="text-lg font-bold text-slate-700">Catat Kas & Pembelian</h3>
@@ -710,19 +738,24 @@
         </div>
     </div>
 
+    <!-- MODAL: TAMBAH ANGGOTA (Dengan Opsi Tendik) -->
     <div x-show="bukaModalTambahAnggota" class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
-            <h3 class="text-lg font-bold text-slate-700">Tambah Anggota</h3>
+            <h3 class="text-lg font-bold text-slate-700">Tambah Anggota (Siswa / Guru / Tendik)</h3>
             <input type="text" x-model="formAnggota.nama" class="w-full border rounded-xl px-3.5 py-2.5 text-sm" placeholder="Nama Lengkap">
-            <select x-model="formAnggota.peran" class="w-full border rounded-xl px-3.5 py-2.5 text-sm bg-white"><option value="Siswa">Siswa</option><option value="Guru">Guru</option></select>
+            <select x-model="formAnggota.peran" class="w-full border rounded-xl px-3.5 py-2.5 text-sm bg-white">
+                <option value="Siswa">Siswa</option>
+                <option value="Guru">Guru</option>
+                <option value="Tendik">Tendik (Tenaga Kependidikan)</option>
+            </select>
             <input type="text" x-model="formAnggota.nis" class="w-full border rounded-xl px-3.5 py-2.5 text-sm" placeholder="NIS / NIP">
-            <input type="text" x-model="formAnggota.kelas" class="w-full border rounded-xl px-3.5 py-2.5 text-sm" placeholder="Kelas">
+            <input type="text" x-model="formAnggota.kelas" class="w-full border rounded-xl px-3.5 py-2.5 text-sm" placeholder="Kelas / Unit Kerja">
             <input type="text" x-model="formAnggota.password" class="w-full border rounded-xl px-3.5 py-2.5 text-sm" placeholder="Sandi Akun">
             <div class="flex justify-end space-x-2 pt-2"><button @click="bukaModalTambahAnggota = false" class="bg-slate-200 px-4 py-2 rounded-xl text-xs font-bold">Batal</button><button @click="simpanAnggota()" class="bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-bold">Simpan</button></div>
         </div>
     </div>
 
-    <!-- Script Utama (Dengan Tarik Data Dua Arah / Fetch) -->
+    <!-- Script Utama -->
     <script>
         function uksApp() {
             function getLocalIsoString() {
@@ -742,14 +775,14 @@
                 editIndexObat: -1, editIndexAlat: -1, editIndexAnggota: -1, kartuPilihNama: '',
                 cariPasienInput: '', filterBulan: 'ALL', filterTahun: 'ALL',
 
-                identitas: JSON.parse(localStorage.getItem('uks_identitas_v21')) || {
-                    namaSekolah: 'SMAN 1 ABUNG BARAT', petugas: 'Bunga Putri Wahyudi, S.Pd.', tahunAjaran: '2025/2026', logoUrl: ''
+                identitas: JSON.parse(localStorage.getItem('uks_identitas_v23')) || {
+                    namaSekolah: 'SMAN 1 ABUNG BARAT', petugas: 'Bunga Putri Wahyudi, S.Pd.', tahunAjaran: '2025/2026', logoUrl: '', passwordOwner: '123456'
                 },
-                daftarAnggota: JSON.parse(localStorage.getItem('uks_anggota_v21')) || [],
-                daftarObat: JSON.parse(localStorage.getItem('uks_obat_v21')) || [],
-                daftarAlat: JSON.parse(localStorage.getItem('uks_alat_v21')) || [],
-                daftarKeuangan: JSON.parse(localStorage.getItem('uks_keu_v21')) || [],
-                riwayatKunjungan: JSON.parse(localStorage.getItem('uks_riwayat_v21')) || [],
+                daftarAnggota: JSON.parse(localStorage.getItem('uks_anggota_v23')) || [],
+                daftarObat: JSON.parse(localStorage.getItem('uks_obat_v23')) || [],
+                daftarAlat: JSON.parse(localStorage.getItem('uks_alat_v23')) || [],
+                daftarKeuangan: JSON.parse(localStorage.getItem('uks_keu_v23')) || [],
+                riwayatKunjungan: JSON.parse(localStorage.getItem('uks_riwayat_v23')) || [],
 
                 formKunjungan: {
                     tanggalCustom: getLocalIsoString(), nama: '', suhu: '', tensi: '',
@@ -760,22 +793,21 @@
                 },
                 suratAktif: { nama: '', kelas: '', tanggal: '', suhu: '-', tensi: '-', keluhan: '', tindakanText: '-', tindakLanjut: '-', jenisSurat: 'pemeriksaan', diagnosaNakes: '' },
 
-                formObat: { nama: '', jenisBatch: 'Baru', produksi: '2026-01-01', expired: '2028-01-01', stokUtuh: 1, sisaPorsi: 60, kapasitasPorsi: 60, satuanPorsi: 'ml', kondisi: 'Normal' },
+                formObat: { nama: '', jenisBatch: 'Baru', produksi: '2026-01-01', expired: '2028-01-01', stokUtuh: 1, tipeKasa: false, kondisi: 'Normal' },
                 formAlat: { nama: '', stokUtuh: 1, kondisi: 'Normal' },
                 formKeuangan: { uraian: '', jenis: 'Masuk', nominal: 0 },
                 formAnggota: { nama: '', peran: 'Siswa', nis: '', kelas: '', password: '123' },
                 kartuForm: { nama: '', nis: '', kelas: '' },
 
                 init() {
-                    this.$watch('daftarAnggota', val => localStorage.setItem('uks_anggota_v21', JSON.stringify(val)));
-                    this.$watch('daftarObat', val => localStorage.setItem('uks_obat_v21', JSON.stringify(val)));
-                    this.$watch('daftarAlat', val => localStorage.setItem('uks_alat_v21', JSON.stringify(val)));
-                    this.$watch('daftarKeuangan', val => localStorage.setItem('uks_keu_v21', JSON.stringify(val)));
-                    this.$watch('riwayatKunjungan', val => localStorage.setItem('uks_riwayat_v21', JSON.stringify(val)));
-                    this.$watch('identitas', val => localStorage.setItem('uks_identitas_v21', JSON.stringify(val)), { deep: true });
+                    this.$watch('daftarAnggota', val => localStorage.setItem('uks_anggota_v23', JSON.stringify(val)));
+                    this.$watch('daftarObat', val => localStorage.setItem('uks_obat_v23', JSON.stringify(val)));
+                    this.$watch('daftarAlat', val => localStorage.setItem('uks_alat_v23', JSON.stringify(val)));
+                    this.$watch('daftarKeuangan', val => localStorage.setItem('uks_keu_v23', JSON.stringify(val)));
+                    this.$watch('riwayatKunjungan', val => localStorage.setItem('uks_riwayat_v23', JSON.stringify(val)));
+                    this.$watch('identitas', val => localStorage.setItem('uks_identitas_v23', JSON.stringify(val)), { deep: true });
                 },
 
-                // SINKRONISASI DUA ARAH: TARIK DATA DARI GOOGLE SHEET SAAT HALAMAN DIMUAT
                 async inisialisasiDataCloud() {
                     let url = this.webAppUrl || localStorage.getItem('uks_webapp_url');
                     if (!url) return;
@@ -791,13 +823,12 @@
                             if (result.kunjungan && result.kunjungan.length > 0) this.riwayatKunjungan = result.kunjungan;
                         }
                     } catch (e) {
-                        console.error("Gagal menarik data dari cloud:", e);
+                        console.error("Gagal menarik data cloud:", e);
                     } finally {
                         this.isSyncing = false;
                     }
                 },
 
-                // KIRIM DATA KE GOOGLE SHEET
                 async sinkronKeCloud(actionName, payloadData) {
                     let url = this.webAppUrl || localStorage.getItem('uks_webapp_url');
                     if (!url) return;
@@ -831,9 +862,9 @@
                     let alerts = [];
                     this.daftarObat.forEach(o => {
                         if (this.isSudahExpired(o.expired)) {
-                            alerts.push({ nama: o.nama + ' [' + o.jenisBatch + ']', ket: 'SUDAH EXPIRED (' + o.expired + ')' });
-                        } else if (o.stokUtuh <= 1) {
-                            alerts.push({ nama: o.nama + ' [' + o.jenisBatch + ']', ket: 'Stok menipis (' + o.stokUtuh + ' botol)' });
+                            alerts.push({ nama: o.nama + ' [' + o.jenisBatch + ']', ket: 'SUDAH EXPIRED' });
+                        } else if (o.stokUtuh <= (o.tipeKasa ? 50 : 1)) {
+                            alerts.push({ nama: o.nama + ' [' + o.jenisBatch + ']', ket: 'Stok menipis (' + o.stokUtuh + (o.tipeKasa ? ' cm' : ' botol') + ')' });
                         }
                     });
                     return alerts;
@@ -851,13 +882,14 @@
                 },
 
                 login() {
+                    let currentPasswordOwner = this.identitas.passwordOwner || '123456';
                     if (this.loginRole === 'owner') {
-                        if (this.inputEmail.toLowerCase() === 'uks@sman1abungbarat.sch.id' && this.inputPassword === '123456') {
+                        if (this.inputEmail.toLowerCase() === 'uks@sman1abungbarat.sch.id' && this.inputPassword === currentPasswordOwner) {
                             this.isLoggedIn = true;
                             localStorage.setItem('uks_logged_in', 'true');
                             localStorage.setItem('uks_role', 'owner');
                             alert('Login Petugas Berhasil!');
-                        } else { alert('Email atau sandi petugas salah!'); }
+                        } else { alert('Email atau kata sandi petugas salah!'); }
                     } else {
                         let member = this.daftarAnggota.find(m => m.nis.toString() === this.inputNis.toString() && m.password === this.inputPassAnggota);
                         if (member) {
@@ -867,16 +899,17 @@
                             this.currentUserNama = member.nama;
                             this.kartuForm = { nama: member.nama, nis: member.nis, kelas: member.kelas };
                             alert('Selamat datang, ' + member.nama + '!');
-                        } else { alert('NIS atau sandi salah!'); }
+                        } else { alert('NIS / NIP atau kata sandi salah!'); }
                     }
                 },
 
                 logout() { this.isLoggedIn = false; localStorage.setItem('uks_logged_in', 'false'); },
+                
                 simpanIdentitasDanSetelan() { 
-                    localStorage.setItem('uks_identitas_v21', JSON.stringify(this.identitas)); 
+                    localStorage.setItem('uks_identitas_v23', JSON.stringify(this.identitas)); 
                     localStorage.setItem('uks_webapp_url', this.webAppUrl);
                     this.inisialisasiDataCloud();
-                    alert('Setelan & URL Web App berhasil disimpan! Menyinkronkan data...'); 
+                    alert('Setelan, sandi petugas & URL Web App berhasil diperbarui!'); 
                 },
 
                 isiOtomatisSurat() {
@@ -893,20 +926,14 @@
                         if (!obatObj) continue;
 
                         if (this.isSudahExpired(obatObj.expired)) {
-                            return alert('PERINGATAN: Obat ' + obatObj.nama + ' [' + obatObj.jenisBatch + '] SUDAH KADALUARSA (Expired)! Tidak dapat digunakan.');
+                            return alert('PERINGATAN: Obat ' + obatObj.nama + ' SUDAH KADALUARSA!');
                         }
-                        if (obatObj.stokUtuh <= 0) return alert('Stok batch obat ' + obatObj.nama + ' habis!');
+                        if (obatObj.stokUtuh < o.jumlah) {
+                            return alert('Stok ' + obatObj.nama + ' tidak mencukupi! Sisa: ' + obatObj.stokUtuh + (obatObj.tipeKasa ? ' cm' : ' botol'));
+                        }
 
-                        obatObj.sisaPorsi -= o.jumlah;
-                        if (obatObj.sisaPorsi <= 0) {
-                            obatObj.stokUtuh -= 1;
-                            if (obatObj.stokUtuh > 0) {
-                                obatObj.sisaPorsi = obatObj.kapasitasPorsi + obatObj.sisaPorsi;
-                            } else {
-                                obatObj.sisaPorsi = 0;
-                            }
-                        }
-                        teksTindakanArr.push(obatObj.nama + ' [' + obatObj.jenisBatch + '] (Pakai: ' + o.jumlah + ')');
+                        obatObj.stokUtuh -= o.jumlah;
+                        teksTindakanArr.push(obatObj.nama + ' [' + obatObj.jenisBatch + '] (Pakai: ' + o.jumlah + (obatObj.tipeKasa ? ' cm' : ' botol') + ')');
                     }
 
                     for (let a of this.formKunjungan.alatList) {
@@ -915,7 +942,7 @@
                         if (!alatObj) continue;
 
                         if (a.kondisi === 'Rusak') {
-                            if (alatObj.stokUtuh <= 0) return alert('Stok alat ' + a.nama + ' sudah 0!');
+                            if (alatObj.stokUtuh <= 0) return alert('Stok alat ' + a.nama + ' sudah habis!');
                             alatObj.stokUtuh -= 1;
                             teksTindakanArr.push(a.nama + ' (Kondisi: RUSAK)');
                         } else {
@@ -950,7 +977,7 @@
                     this.sinkronKeCloud("simpanObat", this.daftarObat);
                     this.sinkronKeCloud("simpanAlat", this.daftarAlat);
 
-                    alert('Data pasien berhasil dicatat & disinkronkan ke Google Sheet!');
+                    alert('Data pasien berhasil dicatat & disinkronkan ke Cloud!');
                 },
 
                 downloadSuratPng() {
@@ -965,7 +992,7 @@
                 },
 
                 naikkanKelasMassal() {
-                    if (!confirm('Proses kenaikan kelas massal? (Kelas 10 ke 11, 11 ke 12, 12 Lulus)')) return;
+                    if (!confirm('Proses kenaikan kelas massal siswa?')) return;
                     this.daftarAnggota.forEach(m => {
                         if (m.peran === 'Siswa') {
                             if (m.kelas.toLowerCase().includes('x ')) m.kelas = m.kelas.replace(/x /i, 'XI ');
@@ -974,7 +1001,7 @@
                         }
                     });
                     this.sinkronKeCloud('simpanAnggota', this.daftarAnggota);
-                    alert('Proses kenaikan kelas selesai & tersinkron ke Sheet!');
+                    alert('Proses kenaikan kelas selesai!');
                 },
 
                 simpanObat() {
@@ -982,7 +1009,7 @@
                     else { this.daftarObat[this.editIndexObat] = {...this.formObat}; this.editIndexObat = -1; }
                     this.bukaModalObat = false;
                     this.sinkronKeCloud('simpanObat', this.daftarObat);
-                    alert('Data obat berhasil disimpan & disinkronkan!');
+                    alert('Data obat / kasa berhasil disimpan & disinkronkan!');
                 },
                 editObat(i) { this.editIndexObat = i; this.formObat = {...this.daftarObat[i]}; this.bukaModalObat = true; },
 
@@ -1006,7 +1033,7 @@
                     this.daftarAnggota.push({...this.formAnggota});
                     this.bukaModalTambahAnggota = false;
                     this.sinkronKeCloud('simpanAnggota', this.daftarAnggota);
-                    alert('Anggota baru berhasil disimpan & disinkronkan!');
+                    alert('Anggota berhasil ditambahkan & disinkronkan!');
                 },
                 editAnggota(i) { this.formAnggota = {...this.daftarAnggota[i]}; this.bukaModalTambahAnggota = true; },
 
@@ -1024,9 +1051,10 @@
                     });
                 },
                 downloadLaporanDoc() {
-                    let html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'></head><body><h2>Laporan UKS ${this.identitas.namaSekolah}</h2><p>Pengurus: ${this.identitas.petugas}</p></body></html>`;
+                    let filtered = this.getKunjunganFiltered();
+                    let html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'></head><body><h2>Arsip Laporan UKS ${this.identitas.namaSekolah}</h2><p>Periode: Bulan ${this.filterBulan} Tahun ${this.filterTahun}</p><p>Pengurus: ${this.identitas.petugas}</p><hr/><p>Total Kasus: ${filtered.length}</p></body></html>`;
                     let blob = new Blob(['\ufeff' + html], { type: 'application/msword' });
-                    let link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'Laporan_UKS.doc'; link.click();
+                    let link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'Arsip_Laporan_UKS_' + this.filterBulan + '_' + this.filterTahun + '.doc'; link.click();
                 },
                 pilihAnggotaUntukKartu() { let m = this.daftarAnggota.find(item => item.nama === this.kartuPilihNama); if (m) this.kartuForm = { nama: m.nama, nis: m.nis, kelas: m.kelas }; },
                 downloadKartu() {
