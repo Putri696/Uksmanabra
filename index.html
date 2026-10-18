@@ -11,7 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans antialiased" x-data="uksApp()">
+<body class="bg-slate-100 text-slate-800 font-sans antialiased" x-data="uksApp()" x-init="inisialisasiDataCloud()">
 
     <!-- HALAMAN LOGIN -->
     <div x-show="!isLoggedIn" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
@@ -85,6 +85,7 @@
                         <h1 class="text-base font-black tracking-wide" x-text="identitas.namaSekolah"></h1>
                         <p class="text-xs text-emerald-200">
                             <i class="fa-solid fa-user-shield mr-1"></i> Pengurus UKS: <strong class="text-white" x-text="identitas.petugas"></strong>
+                            <span class="ml-2 bg-emerald-700 px-2 py-0.5 rounded text-[10px]" x-text="isSyncing ? '🔄 Menyinkronkan...' : '☁️ Terhubung Cloud'"></span>
                         </p>
                     </div>
                 </div>
@@ -667,7 +668,7 @@
                         <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tahun Ajaran</label><input type="text" x-model="identitas.tahunAjaran" class="w-full border rounded-xl px-3.5 py-3 text-sm font-semibold"></div>
                         <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">URL Logo Sekolah</label><input type="text" x-model="identitas.logoUrl" class="w-full border rounded-xl px-3.5 py-3 text-xs font-mono"></div>
                         <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">URL Google Sheet Web App</label><input type="text" x-model="webAppUrl" class="w-full border rounded-xl px-3.5 py-3 text-xs font-mono bg-slate-50" placeholder="https://script.google.com/macros/s/.../exec"></div>
-                        <button @click="simpanIdentitasDanSetelan()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl text-sm shadow">Simpan Perubahan</button>
+                        <button @click="simpanIdentitasDanSetelan()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl text-sm shadow">Simpan Perubahan & Sinkronkan</button>
                     </div>
                 </div>
             </div>
@@ -721,7 +722,7 @@
         </div>
     </div>
 
-    <!-- Script Utama -->
+    <!-- Script Utama (Dengan Tarik Data Dua Arah / Fetch) -->
     <script>
         function uksApp() {
             function getLocalIsoString() {
@@ -735,28 +736,20 @@
                 currentUserNama: localStorage.getItem('uks_current_user') || '',
                 inputEmail: '', inputPassword: '', inputNis: '', inputPassAnggota: '',
                 tab: 'dashboard', webAppUrl: localStorage.getItem('uks_webapp_url') || '',
+                isSyncing: false,
                 
                 bukaModalObat: false, bukaModalAlat: false, bukaModalKeuangan: false, bukaModalTambahAnggota: false,
                 editIndexObat: -1, editIndexAlat: -1, editIndexAnggota: -1, kartuPilihNama: '',
                 cariPasienInput: '', filterBulan: 'ALL', filterTahun: 'ALL',
 
-                identitas: JSON.parse(localStorage.getItem('uks_identitas_v20')) || {
+                identitas: JSON.parse(localStorage.getItem('uks_identitas_v21')) || {
                     namaSekolah: 'SMAN 1 ABUNG BARAT', petugas: 'Bunga Putri Wahyudi, S.Pd.', tahunAjaran: '2025/2026', logoUrl: ''
                 },
-                daftarAnggota: JSON.parse(localStorage.getItem('uks_anggota_v20')) || [
-                    { nama: 'Siti Aminah', peran: 'Siswa', nis: '102938', kelas: 'X IPA 1', password: '123' },
-                    { nama: 'Andi Pratama', peran: 'Siswa', nis: '102939', kelas: 'XI IPS 2', password: '123' }
-                ],
-                daftarObat: JSON.parse(localStorage.getItem('uks_obat_v20')) || [
-                    { nama: 'Minyak Kayu Putih', jenisBatch: 'Baru', produksi: '2025-01-01', expired: '2028-01-01', stokUtuh: 2, sisaPorsi: 60, kapasitasPorsi: 60, satuanPorsi: 'ml', kondisi: 'Normal' }
-                ],
-                daftarAlat: JSON.parse(localStorage.getItem('uks_alat_v20')) || [
-                    { nama: 'Termometer Digital', stokUtuh: 3, kondisi: 'Normal' }
-                ],
-                daftarKeuangan: JSON.parse(localStorage.getItem('uks_keu_v20')) || [
-                    { tanggal: '10/10/2026', uraian: 'Dana Sehat Siswa', jenis: 'Masuk', nominal: 500000 }
-                ],
-                riwayatKunjungan: JSON.parse(localStorage.getItem('uks_riwayat_v20')) || [],
+                daftarAnggota: JSON.parse(localStorage.getItem('uks_anggota_v21')) || [],
+                daftarObat: JSON.parse(localStorage.getItem('uks_obat_v21')) || [],
+                daftarAlat: JSON.parse(localStorage.getItem('uks_alat_v21')) || [],
+                daftarKeuangan: JSON.parse(localStorage.getItem('uks_keu_v21')) || [],
+                riwayatKunjungan: JSON.parse(localStorage.getItem('uks_riwayat_v21')) || [],
 
                 formKunjungan: {
                     tanggalCustom: getLocalIsoString(), nama: '', suhu: '', tensi: '',
@@ -774,18 +767,41 @@
                 kartuForm: { nama: '', nis: '', kelas: '' },
 
                 init() {
-                    this.$watch('daftarAnggota', val => { localStorage.setItem('uks_anggota_v20', JSON.stringify(val)); });
-                    this.$watch('daftarObat', val => { localStorage.setItem('uks_obat_v20', JSON.stringify(val)); });
-                    this.$watch('daftarAlat', val => { localStorage.setItem('uks_alat_v20', JSON.stringify(val)); });
-                    this.$watch('daftarKeuangan', val => { localStorage.setItem('uks_keu_v20', JSON.stringify(val)); });
-                    this.$watch('riwayatKunjungan', val => { localStorage.setItem('uks_riwayat_v20', JSON.stringify(val)); });
-                    this.$watch('identitas', val => { localStorage.setItem('uks_identitas_v20', JSON.stringify(val)); }, { deep: true });
+                    this.$watch('daftarAnggota', val => localStorage.setItem('uks_anggota_v21', JSON.stringify(val)));
+                    this.$watch('daftarObat', val => localStorage.setItem('uks_obat_v21', JSON.stringify(val)));
+                    this.$watch('daftarAlat', val => localStorage.setItem('uks_alat_v21', JSON.stringify(val)));
+                    this.$watch('daftarKeuangan', val => localStorage.setItem('uks_keu_v21', JSON.stringify(val)));
+                    this.$watch('riwayatKunjungan', val => localStorage.setItem('uks_riwayat_v21', JSON.stringify(val)));
+                    this.$watch('identitas', val => localStorage.setItem('uks_identitas_v21', JSON.stringify(val)), { deep: true });
                 },
 
-                // FUNGSI UTAMA SINKRONISASI KE GOOGLE SHEETS CLOUD
+                // SINKRONISASI DUA ARAH: TARIK DATA DARI GOOGLE SHEET SAAT HALAMAN DIMUAT
+                async inisialisasiDataCloud() {
+                    let url = this.webAppUrl || localStorage.getItem('uks_webapp_url');
+                    if (!url) return;
+                    this.isSyncing = true;
+                    try {
+                        let response = await fetch(url);
+                        let result = await response.json();
+                        if (result.status === 'success') {
+                            if (result.obat && result.obat.length > 0) this.daftarObat = result.obat;
+                            if (result.alat && result.alat.length > 0) this.daftarAlat = result.alat;
+                            if (result.anggota && result.anggota.length > 0) this.daftarAnggota = result.anggota;
+                            if (result.keuangan && result.keuangan.length > 0) this.daftarKeuangan = result.keuangan;
+                            if (result.kunjungan && result.kunjungan.length > 0) this.riwayatKunjungan = result.kunjungan;
+                        }
+                    } catch (e) {
+                        console.error("Gagal menarik data dari cloud:", e);
+                    } finally {
+                        this.isSyncing = false;
+                    }
+                },
+
+                // KIRIM DATA KE GOOGLE SHEET
                 async sinkronKeCloud(actionName, payloadData) {
                     let url = this.webAppUrl || localStorage.getItem('uks_webapp_url');
                     if (!url) return;
+                    this.isSyncing = true;
                     try {
                         await fetch(url, {
                             method: 'POST',
@@ -795,6 +811,8 @@
                         });
                     } catch (e) {
                         console.error("Gagal sinkron cloud:", e);
+                    } finally {
+                        this.isSyncing = false;
                     }
                 },
 
@@ -855,9 +873,10 @@
 
                 logout() { this.isLoggedIn = false; localStorage.setItem('uks_logged_in', 'false'); },
                 simpanIdentitasDanSetelan() { 
-                    localStorage.setItem('uks_identitas_v20', JSON.stringify(this.identitas)); 
+                    localStorage.setItem('uks_identitas_v21', JSON.stringify(this.identitas)); 
                     localStorage.setItem('uks_webapp_url', this.webAppUrl);
-                    alert('Setelan & URL Web App berhasil disimpan!'); 
+                    this.inisialisasiDataCloud();
+                    alert('Setelan & URL Web App berhasil disimpan! Menyinkronkan data...'); 
                 },
 
                 isiOtomatisSurat() {
@@ -927,12 +946,11 @@
                     this.riwayatKunjungan.unshift(kunjunganBaru);
                     this.suratAktif = { ...kunjunganBaru };
 
-                    // SINKRONISASI KE GOOGLE SHEETS
                     this.sinkronKeCloud("simpanKunjungan", kunjunganBaru);
                     this.sinkronKeCloud("simpanObat", this.daftarObat);
                     this.sinkronKeCloud("simpanAlat", this.daftarAlat);
 
-                    alert('Data pasien berhasil dicatat & otomatis tersimpan ke Google Sheet!');
+                    alert('Data pasien berhasil dicatat & disinkronkan ke Google Sheet!');
                 },
 
                 downloadSuratPng() {
